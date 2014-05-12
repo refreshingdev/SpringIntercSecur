@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:sec="http://www.springframework.org/schema/security"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+       http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd"
+    >
+    <sec:authentication-manager alias="myAuthManager">
+        <sec:authentication-provider>
+            <sec:user-service>
+                <!--cannot nest roles/authorities, SQL provider supports groups-->
+                <sec:user name="user" password="123456" authorities="ROLE_USER" />
+                <sec:user name="dev" password="654321" authorities="ROLE_USER,ROLE_DEVELOPER" />
+                <sec:user name="adminDev" password="654321" authorities="ROLE_USER,ROLE_ADMIN,ROLE_DEVELOPER" />
+                <sec:user name="admin" password="654321" authorities="ROLE_USER,ROLE_ADMIN" />
+            </sec:user-service>
+        </sec:authentication-provider>
+    </sec:authentication-manager>
+
+    <bean name="myService" class="com.example.MyService">
+        <sec:intercept-methods>
+            <!--every method requires user role ... -->
+            <sec:protect method="*" access="ROLE_USER"/>
+
+            <!-- ... and in addition ... -->
+            <sec:protect method="com.example.MyService.useTheComputer" access="ROLE_USER"/>
+            <sec:protect method="com.example.MyService.formatDisk" access="ROLE_ADMIN"/>
+
+            <!--you can skip package and class name -->
+            <sec:protect method="compile" access="ROLE_DEVELOPER"/>
+        </sec:intercept-methods>
+    </bean>
+
+    <bean name="myUnprotectedService" class="com.example.MyService"/>
+
+    <!-- demonstrates securing whole beans -->
+    <!--
+    <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames" value="myUnprotectedService,otherBean,devBean*"/>
+        <property name="interceptorNames">
+            <list>
+                <value>myInterceptor</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean name="myInterceptor" class="com.example.RequireAuthority">
+        <property name="requestedAuthority" value="ROLE_DEVELOPER"/>
+    </bean>
+    -->
+</beans>
