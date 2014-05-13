@@ -11,7 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
- * Technical demonstation of securing method invocations with spring-security
+ * Technical demonstration of securing method invocations with spring-security
  */
 public class ContextRunnerMain {
 
